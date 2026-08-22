@@ -67,6 +67,7 @@ function BobDeveloperHub.new(options)
 
     self.Pages = {}
     self.Tabs = {}
+    self.Categories = {}
     self.CurrentPage = nil
     self.Minimized = false
 
@@ -352,6 +353,10 @@ function BobDeveloperHub:ToggleMinimize()
 end
 
 function BobDeveloperHub:AddCategory(name)
+    if self.Categories[name] then
+        return self.Categories[name]
+    end
+
     local Button = Create("TextButton", {
         Name = name,
         Size = UDim2.new(1, 0, 0, 34),
@@ -835,6 +840,8 @@ function BobDeveloperHub:AddCategory(name)
     table.insert(self.Pages, Page)
     table.insert(self.Tabs, Button)
 
+    self.Categories[name] = Category
+
     if #self.Pages == 1 then
         Select()
     end
@@ -846,11 +853,26 @@ function BobDeveloperHub:Destroy()
     if self.ScreenGui then
         self.ScreenGui:Destroy()
     end
+    _G.BobDeveloperHub = nil
+    if getgenv then
+        getgenv().BobDeveloperHub = nil
+    end
 end
 
-local Hub = BobDeveloperHub.new({
-    Title = "BobDeveloperHub",
-    Subtitle = "Universal Script Hub",
-    Width = 560,
-    Height = 360
-})
+local InstanceHub = _G.BobDeveloperHub or (getgenv and getgenv().BobDeveloperHub)
+
+if not InstanceHub then
+    InstanceHub = BobDeveloperHub.new({
+        Title = "BobDeveloperHub",
+        Subtitle = "Universal Script Hub",
+        Width = 560,
+        Height = 360
+    })
+
+    _G.BobDeveloperHub = InstanceHub
+    if getgenv then
+        getgenv().BobDeveloperHub = InstanceHub
+    end
+end
+
+return InstanceHub
