@@ -97,7 +97,7 @@ function BobDeveloperHub:_Create()
         ),
         BackgroundColor3 = Theme.Background,
         BorderSizePixel = 0
-    }, ScreenGui)
+    }, Main)
 
     Corner(Main, 9)
     Stroke(Main)
