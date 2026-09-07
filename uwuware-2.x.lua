@@ -69,7 +69,9 @@
 		return connection
 	end
 
-    function library:Unload()
+     local inputService = game:GetService("UserInputService")
+
+	function library:Unload()
 		inputService.MouseIconEnabled = self.mousestate
 		for _, c in next, self.connections do
 			c:Disconnect()
@@ -84,13 +86,15 @@
 		for _, o in next, self.options do
 			if o.type == "toggle" then
 				if type(o.SetState) == "function" then
-					coroutine.resume(coroutine.create(o.SetState, o))
+					coroutine.resume(coroutine.create(function() o:SetState() end))
 				end
 			end
 		end
 		library = nil
 		getgenv().library = nil
 	end
+
+     return library
 
 	function library:LoadConfig(config)
 		if table.find(self:GetConfigs(), config) then
