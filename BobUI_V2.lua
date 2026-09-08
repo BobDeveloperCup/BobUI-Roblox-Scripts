@@ -32,6 +32,11 @@ local function Create(className, properties)
     if className == "TextBox" then
         instance.Text = ""
     end
+    
+    if className == "TextLabel" or className == "TextButton" or className == "TextBox" then
+        instance.TextStrokeTransparency = 1 
+        instance.BorderSizePixel = 0
+    end
 
     for k, v in pairs(properties or {}) do
         instance[k] = v
@@ -121,14 +126,44 @@ local function MakeDraggable(topbar, object)
     end)
 end
 
-local AccentColor = Color3.fromRGB(190, 140, 255)
-local BorderColor = Color3.fromRGB(220, 220, 220)
-local BackgroundColor = Color3.fromRGB(255, 255, 255)
-local CardColor = Color3.fromRGB(245, 245, 248)
-local HoverColor = Color3.fromRGB(230, 230, 235)
-local TextColor = Color3.fromRGB(30, 30, 35)
-local SubTextColor = Color3.fromRGB(100, 100, 110)
-local PinkActiveColor = Color3.fromRGB(255, 105, 180)
+local Fonts = {
+    Regular = Enum.Font.Gotham,
+    Bold = Enum.Font.GothamBold,
+    Black = Enum.Font.GothamBlack,
+    Code = Enum.Font.Code
+}
+
+local Themes = {
+    Light = {
+        Background = Color3.fromRGB(255, 255, 255),
+        Card = Color3.fromRGB(245, 245, 248),
+        Hover = Color3.fromRGB(230, 230, 235),
+        Text = Color3.fromRGB(30, 30, 35),
+        SubText = Color3.fromRGB(100, 100, 110),
+        Border = Color3.fromRGB(220, 220, 220),
+        Accent = Color3.fromRGB(255, 105, 180) 
+    },
+    Dark = {
+        Background = Color3.fromRGB(25, 25, 25),
+        Card = Color3.fromRGB(35, 35, 35),
+        Hover = Color3.fromRGB(45, 45, 45),
+        Text = Color3.fromRGB(240, 240, 240),
+        SubText = Color3.fromRGB(170, 170, 170),
+        Border = Color3.fromRGB(50, 50, 50),
+        Accent = Color3.fromRGB(255, 105, 180) 
+    }
+}
+
+local CurrentTheme = Themes.Light 
+
+local AccentColor = CurrentTheme.Accent
+local BorderColor = CurrentTheme.Border
+local BackgroundColor = CurrentTheme.Background
+local CardColor = CurrentTheme.Card
+local HoverColor = CurrentTheme.Hover
+local TextColor = CurrentTheme.Text
+local SubTextColor = CurrentTheme.SubText
+local PinkActiveColor = CurrentTheme.Accent
 
 local GlobalNotifContainer
 
@@ -611,8 +646,16 @@ function Library:CreateWindow(options)
         local TabBtn = Create("TextButton", {Parent = TabContainer, Text = "", BackgroundColor3 = HoverColor, BackgroundTransparency = 1, Size = UDim2.new(1, 0, 0, 35), AutoButtonColor = false})
         Create("UICorner", {Parent = TabBtn, CornerRadius = UDim.new(0, 6)})
         AddBounce(TabBtn, 0.98)
-        local Indicator = Create("Frame", {Name = "Indicator", Parent = TabBtn, BackgroundColor3 = isLocked and Color3.fromRGB(255, 215, 0) or AccentColor, Size = UDim2.new(0, 3, 0, 0), Position = UDim2.new(0, 0, 0.5, 0), AnchorPoint = Vector2.new(0, 0.5)})
-        Create("UICorner", {Parent = Indicator, CornerRadius = UDim.new(0, 1.5)})
+        local Indicator = Create("Frame", {
+        Name = "Indicator", 
+        Parent = TabBtn, 
+        BackgroundColor3 = isLocked and Color3.fromRGB(255, 215, 0) or AccentColor, 
+        Size = UDim2.new(0, 3, 0, 0), 
+        Position = UDim2.new(0, 0, 0.5, 0), 
+        AnchorPoint = Vector2.new(0, 0.5),
+        BorderSizePixel = 0 
+        })
+        Create("UICorner", {Parent = Indicator, CornerRadius = UDim.new(1, 0)})
         local Txt = Create("TextLabel", {Parent = TabBtn, Text = tabName, Font = Enum.Font.GothamBold, TextSize = 13, TextColor3 = SubTextColor, BackgroundTransparency = 1, Size = UDim2.new(1, -40, 1, 0), Position = UDim2.new(0, 15, 0, 0), TextXAlignment = Enum.TextXAlignment.Left})
 
         if isLocked then
@@ -786,8 +829,9 @@ function Library:CreateWindow(options)
                     Create("UIStroke", {Parent = Lever, Color = BorderColor, Thickness = 1})
                     AddBounce(Lever)
                     
-                    local Knob = Create("Frame", {Parent = Lever, BackgroundColor3 = Color3.fromRGB(255, 255, 255), Size = UDim2.new(0, 14, 0, 14), Position = state and UDim2.new(1, -16, 0.5, -7) or UDim2.new(0, 2, 0.5, -7)})
-                    Create("UICorner", {Parent = Knob, CornerRadius = UDim.new(0, 6)})
+                    local Knob = Create("Frame", {Parent = Fill, BackgroundColor3 = Color3.fromRGB(255, 255, 255), Size = UDim2.new(0, 12, 0, 12), Position = UDim2.new(1, -6, 0.5, -6), BorderSizePixel = 0})
+                    Create("UICorner", {Parent = Knob, CornerRadius = UDim.new(1, 0)})
+                    Create("UIStroke", {Parent = Knob, Color = Color3.fromRGB(0, 0, 0), Thickness = 1, Transparency = 0.8})
 
                     local function internalSet(val)
                         state = val
