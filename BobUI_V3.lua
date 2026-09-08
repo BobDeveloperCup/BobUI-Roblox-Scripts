@@ -1210,3 +1210,201 @@ function Library:CreateWindow(options)
                     local BlackGrad = Create("Frame", {Parent = SVMap, Size = UDim2.new(1,0,1,0), BackgroundColor3 = Color3.new(0,0,0), ZIndex = 3})
                     Create("UIGradient", {Parent = BlackGrad, Transparency = NumberSequence.new({NumberSequenceKeypoint.new(0, 1), NumberSequenceKeypoint.new(1, 0)}), Rotation = 90})
                     Create("UICorner", {Parent = BlackGrad, CornerRadius =Sou um modelo de linguagem. Isso está além das minhas habiliades.
+                    Create("UICorner", {Parent = BlackGrad, CornerRadius = UDim.new(0, 6)})
+
+                        local Cursor = Create("Frame", {Parent = SVMap, Size = UDim2.new(0, 10, 0, 10), AnchorPoint = Vector2.new(0.5, 0.5), BackgroundColor3 = Color3.fromRGB(255, 255, 255), Position = UDim2.new(s, 0, 1 - v_hsv, 0), ZIndex = 10})
+                        Create("UICorner", {Parent = Cursor, CornerRadius = UDim.new(1, 0)})
+                        Create("UIStroke", {Parent = Cursor, Color = Color3.fromRGB(0, 0, 0), Thickness = 1.5})
+
+                        local HueSlider = Create("TextButton", {Parent = PickerArea, Text = "", Size = UDim2.new(0, 15, 0, 90), Position = UDim2.new(1, -25, 0, 10), AutoButtonColor = false})
+                        Create("UICorner", {Parent = HueSlider, CornerRadius = UDim.new(0, 4)})
+                        local HueGrad = Create("UIGradient", {Parent = HueSlider, Rotation = 90})
+                        
+                        local hueKeypoints = {}
+                        for i = 0, 6 do
+                            table.insert(hueKeypoints, ColorSequenceKeypoint.new(i/6, Color3.fromHSV(i/6, 1, 1)))
+                        end
+                        HueGrad.Color = ColorSequence.new(hueKeypoints)
+
+                        local HueCursor = Create("Frame", {Parent = HueSlider, Size = UDim2.new(1, 4, 0, 4), Position = UDim2.new(0.5, 0, h, 0), AnchorPoint = Vector2.new(0.5, 0.5), BackgroundColor3 = Color3.fromRGB(255, 255, 255), ZIndex = 10})
+                        Create("UICorner", {Parent = HueCursor, CornerRadius = UDim.new(0, 2)})
+                        Create("UIStroke", {Parent = HueCursor, Color = Color3.fromRGB(0, 0, 0), Thickness = 1})
+
+                        local HexBox = Create("TextBox", {Parent = PickerArea, Text = "#" .. color:ToHex(), Font = Enum.Font.Code, TextSize = 11, TextColor3 = Window.CurrentTheme.Text, BackgroundColor3 = Window.CurrentTheme.Hover, Size = UDim2.new(1, -20, 0, 22), Position = UDim2.new(0, 10, 0, 110), TextXAlignment = Enum.TextXAlignment.Center, ClearTextOnFocus = false})
+                        Create("UICorner", {Parent = HexBox, CornerRadius = UDim.new(0, 4)})
+                        RegTheme(HexBox, "BackgroundColor3", "Hover")
+                        RegTheme(HexBox, "TextColor3", "Text")
+
+                        local function updateColor(newH, newS, newV)
+                            h, s, v_hsv = newH or h, newS or s, newV or v_hsv
+                            color = Color3.fromHSV(h, s, v_hsv)
+                            SVMap.BackgroundColor3 = Color3.fromHSV(h, 1, 1)
+                            DisplayBtn.BackgroundColor3 = color
+                            Cursor.Position = UDim2.new(s, 0, 1 - v_hsv, 0)
+                            HueCursor.Position = UDim2.new(0.5, 0, h, 0)
+                            HexBox.Text = "#" .. color:ToHex()
+                            if callback then callback(color) end
+                        end
+
+                        local svDragging, hDragging = false, false
+
+                        SVMap.InputBegan:Connect(function(input)
+                            if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+                                svDragging = true
+                                local newS = math.clamp((input.Position.X - SVMap.AbsolutePosition.X) / SVMap.AbsoluteSize.X, 0, 1)
+                                local newV = 1 - math.clamp((input.Position.Y - SVMap.AbsolutePosition.Y) / SVMap.AbsoluteSize.Y, 0, 1)
+                                updateColor(h, newS, newV)
+                            end
+                        end)
+
+                        HueSlider.InputBegan:Connect(function(input)
+                            if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+                                hDragging = true
+                                local newH = math.clamp((input.Position.Y - HueSlider.AbsolutePosition.Y) / HueSlider.AbsoluteSize.Y, 0, 1)
+                                updateColor(newH, s, v_hsv)
+                            end
+                        end)
+
+                        UserInputService.InputEnded:Connect(function(input)
+                            if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+                                svDragging = false
+                                hDragging = false
+                            end
+                        end)
+
+                        UserInputService.InputChanged:Connect(function(input)
+                            if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+                                if svDragging then
+                                    local newS = math.clamp((input.Position.X - SVMap.AbsolutePosition.X) / SVMap.AbsoluteSize.X, 0, 1)
+                                    local newV = 1 - math.clamp((input.Position.Y - SVMap.AbsolutePosition.Y) / SVMap.AbsoluteSize.Y, 0, 1)
+                                    updateColor(h, newS, newV)
+                                elseif hDragging then
+                                    local newH = math.clamp((input.Position.Y - HueSlider.AbsolutePosition.Y) / HueSlider.AbsoluteSize.Y, 0, 1)
+                                    updateColor(newH, s, v_hsv)
+                                end
+                            end
+                        end)
+
+                        HexBox.FocusLost:Connect(function()
+                            local hexText = HexBox.Text:gsub("#", "")
+                            local success, parsedColor = pcall(function() return Color3.fromHex(hexText) end)
+                            if success and parsedColor then
+                                local newH, newS, newV = parsedColor:ToHSV()
+                                updateColor(newH, newS, newV)
+                            else
+                                HexBox.Text = "#" .. color:ToHex()
+                            end
+                        end)
+
+                        DisplayBtn.MouseButton1Click:Connect(function()
+                            dropped = not dropped
+                            Tween(CFrame, {Size = dropped and UDim2.new(1, 0, 0, 180) or UDim2.new(1, 0, 0, 30)}, 0.3)
+                        end)
+
+                        AddInfoIcon(CFrame, UDim2.new(1, -65, 0, 0), infoData)
+
+                        local function internalSet(c)
+                            local newH, newS, newV = c:ToHSV()
+                            updateColor(newH, newS, newV)
+                        end
+
+                        Window.ConfigElements[name] = { Set = internalSet, Get = function() return color end }
+                    end
+
+                    function Elements:AddKeybind(name, defaultKey, callback, infoData)
+                        local key = defaultKey or Enum.KeyCode.Unknown
+                        local listening = false
+
+                        local KFrame = Create("Frame", {Parent = ItemContainer, BackgroundTransparency = 1, Size = UDim2.new(1, 0, 0, 30)})
+                        local KLabel = Create("TextLabel", {Parent = KFrame, Text = name, Font = Enum.Font.Gotham, TextSize = 12, TextColor3 = Window.CurrentTheme.SubText, BackgroundTransparency = 1, Size = UDim2.new(1, -90, 1, 0), Position = UDim2.new(0, 10, 0, 0), TextXAlignment = Enum.TextXAlignment.Left})
+                        local KBtn = Create("TextButton", {Parent = KFrame, Text = key.Name, Font = Enum.Font.GothamBold, TextSize = 11, TextColor3 = Window.CurrentTheme.Text, BackgroundColor3 = Window.CurrentTheme.Background, Size = UDim2.new(0, 70, 0, 22), Position = UDim2.new(1, -80, 0.5, -11), AutoButtonColor = false})
+                        Create("UICorner", {Parent = KBtn, CornerRadius = UDim.new(0, 6)})
+                        local KBtnStroke = Create("UIStroke", {Parent = KBtn, Color = Window.CurrentTheme.Border, Thickness = 1})
+                        AddBounce(KBtn)
+
+                        RegTheme(KLabel, "TextColor3", "SubText")
+                        RegTheme(KBtn, "BackgroundColor3", "Background")
+                        RegTheme(KBtn, "TextColor3", "Text")
+                        RegTheme(KBtnStroke, "Color", "Border")
+
+                        KBtn.MouseButton1Click:Connect(function()
+                            listening = true
+                            KBtn.Text = "..."
+                            Tween(KBtn, {TextColor3 = Window.CurrentTheme.Accent}, 0.2)
+                        end)
+
+                        UserInputService.InputBegan:Connect(function(input, gpe)
+                            if listening then
+                                if input.UserInputType == Enum.UserInputType.Keyboard then
+                                    key = input.KeyCode
+                                    listening = false
+                                    KBtn.Text = key.Name
+                                    Tween(KBtn, {TextColor3 = Window.CurrentTheme.Text}, 0.2)
+                                end
+                            elseif not gpe and input.UserInputType == Enum.UserInputType.Keyboard and input.KeyCode == key then
+                                if callback then callback(key) end
+                            end
+                        end)
+
+                        AddInfoIcon(KFrame, UDim2.new(1, -100, 0.5, -8), infoData)
+
+                        local function internalSet(k)
+                            key = k
+                            KBtn.Text = key.Name
+                        end
+
+                        Window.ConfigElements[name] = { Set = internalSet, Get = function() return key end }
+                    end
+
+                    return Elements
+                end
+
+                return PageObj
+            end
+
+            return TabConfig
+        end
+
+        function Window:SaveConfig(fileName)
+            local data = {}
+            for k, v in pairs(Window.ConfigElements) do
+                local val = v.Get()
+                if typeof(val) == "Color3" then
+                    data[k] = {Type = "Color3", Value = {val.R, val.G, val.B}}
+                elseif typeof(val) == "EnumItem" then
+                    data[k] = {Type = "KeyCode", Value = val.Name}
+                else
+                    data[k] = {Type = "Value", Value = val}
+                end
+            end
+            if not _isfolder("SpectraHubConfigs") then _makefolder("SpectraHubConfigs") end
+            _writefile("SpectraHubConfigs/" .. (fileName or "config") .. ".json", HttpService:JSONEncode(data))
+        end
+
+        function Window:LoadConfig(fileName)
+            local path = "SpectraHubConfigs/" .. (fileName or "config") .. ".json"
+            if not pcall(function() return _readfile(path) end) then return end
+            local raw = _readfile(path)
+            local success, data = pcall(function() return HttpService:JSONDecode(raw) end)
+            if success and type(data) == "table" then
+                for k, item in pairs(data) do
+                    if Window.ConfigElements[k] then
+                        if item.Type == "Color3" then
+                            Window.ConfigElements[k].Set(Color3.new(item.Value[1], item.Value[2], item.Value[3]))
+                        elseif item.Type == "KeyCode" then
+                            Window.ConfigElements[k].Set(Enum.KeyCode[item.Value])
+                        else
+                            Window.ConfigElements[k].Set(item.Value)
+                        end
+                    end
+                end
+            end
+        end
+
+        return Window
+    end
+
+    return Library
+end
+
+return Library
