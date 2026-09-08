@@ -1,7 +1,5 @@
--- Saved Information Context: Staying inside BobUI_3.lua
-```[cite: 3]
+[cite: 3]
 
-```lua
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
 local CoreGui = game:GetService("CoreGui")
